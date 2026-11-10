@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.api.config import get_settings
+from src.api.routes import environment, farm, recommendations, scenarios, sources
 
 # Configure structured logging
 logging.basicConfig(
@@ -46,15 +47,10 @@ app.add_middleware(
 @app.middleware("http")
 async def audit_and_timing_middleware(request: Request, call_next):
     start_time = time.perf_counter()
-    logger.info(f"Incoming request: {request.method} {request.url.path}")
     try:
         response = await call_next(request)
         duration_ms = (time.perf_counter() - start_time) * 1000.0
         response.headers["X-Response-Time-Ms"] = f"{duration_ms:.2f}"
-        logger.info(
-            f"Handled request: {request.method} {request.url.path} "
-            f"Status: {response.status_code} in {duration_ms:.2f}ms"
-        )
         return response
     except Exception as exc:
         duration_ms = (time.perf_counter() - start_time) * 1000.0
@@ -73,7 +69,6 @@ async def audit_and_timing_middleware(request: Request, call_next):
 # Centralized Validation Error Handling
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    logger.warning(f"Validation error on {request.url.path}: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -83,6 +78,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     )
+
+
+# Include Domain Routers
+app.include_router(farm.router)
+app.include_router(environment.router)
+app.include_router(recommendations.router)
+app.include_router(scenarios.router)
+app.include_router(sources.router)
 
 
 # Health Check
