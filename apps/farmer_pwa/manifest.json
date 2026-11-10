@@ -1,0 +1,18 @@
+{
+  "name": "نبتة - المساعد الزراعي الذكي",
+  "short_name": "نبتة",
+  "start_url": "/farmer/index.html",
+  "display": "standalone",
+  "background_color": "#1B5E20",
+  "theme_color": "#1B5E20",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar-EG",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
