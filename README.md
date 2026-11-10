@@ -1,4 +1,4 @@
-# FieldWise AI (نَبْتَة) — Egypt Edition
+# Napta (نَبْتَة) — Egypt Edition
 ## Track B (The Body): Backend, Data Engineering, Voice AI & Expert Console
 **NASA Space Apps Challenge 2026** — *Challenge: "Field Shift: Adapting Farms with NASA Data"*
 
