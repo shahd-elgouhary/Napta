@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.api.config import get_settings
-from src.api.routes import environment, farm, recommendations, scenarios, sources
+from src.api.routes import environment, farm, recommendations, scenarios, sources, voice
 
 # Configure structured logging
 logging.basicConfig(
@@ -86,6 +86,7 @@ app.include_router(environment.router)
 app.include_router(recommendations.router)
 app.include_router(scenarios.router)
 app.include_router(sources.router)
+app.include_router(voice.router)
 
 
 # Health Check
