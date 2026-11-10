@@ -1,0 +1,131 @@
+{
+  "kafr_el_sheikh": {
+    "location_name": "Kafr El-Sheikh (كفر الشيخ - دلتا النيل)",
+    "coordinates": {
+      "latitude": 31.11,
+      "longitude": 30.94
+    },
+    "climate": {
+      "annual_mean_temp_c": 20.8,
+      "summer_mean_temp_c": 27.9,
+      "winter_mean_temp_c": 13.5,
+      "relative_humidity_pct": 68.5,
+      "wind_speed_ms": 3.8,
+      "solar_radiation_kwh_m2_day": 5.4,
+      "annual_precipitation_mm": 52.0
+    },
+    "soil": {
+      "ph_water": 8.05,
+      "organic_carbon_g_kg": 12.4,
+      "clay_pct": 52.0,
+      "silt_pct": 35.0,
+      "sand_pct": 13.0,
+      "bulk_density_cg_cm3": 130.0,
+      "cation_exchange_capacity_cmolc_kg": 38.5,
+      "texture_class": "Clay",
+      "salinity_status": "UNKNOWN",
+      "salinity_estimated_dsm": null
+    },
+    "provenance": {
+      "nasa_power": {
+        "source": "NASA POWER Climatology API",
+        "retrieval_date": "2026-10-01T00:00:00Z",
+        "quality_flag": "VALID_FIXTURE",
+        "variables": ["T2M", "RH2M", "WS2M", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR"]
+      },
+      "soilgrids": {
+        "source": "ISRIC SoilGrids v2.0 REST API",
+        "retrieval_date": "2026-10-01T00:00:00Z",
+        "quality_flag": "VALID_FIXTURE",
+        "depth_interval": "0-30cm weighted",
+        "note": "SoilGrids does NOT provide salinity measurements. Unknown salinity remains explicitly UNKNOWN."
+      }
+    }
+  },
+  "minya": {
+    "location_name": "Minya (المنيا - مصر الوسطى)",
+    "coordinates": {
+      "latitude": 28.11,
+      "longitude": 30.75
+    },
+    "climate": {
+      "annual_mean_temp_c": 22.4,
+      "summer_mean_temp_c": 29.8,
+      "winter_mean_temp_c": 14.2,
+      "relative_humidity_pct": 52.0,
+      "wind_speed_ms": 3.2,
+      "solar_radiation_kwh_m2_day": 5.9,
+      "annual_precipitation_mm": 8.0
+    },
+    "soil": {
+      "ph_water": 7.95,
+      "organic_carbon_g_kg": 9.2,
+      "clay_pct": 34.0,
+      "silt_pct": 42.0,
+      "sand_pct": 24.0,
+      "bulk_density_cg_cm3": 138.0,
+      "cation_exchange_capacity_cmolc_kg": 32.0,
+      "texture_class": "Clay Loam",
+      "salinity_status": "UNKNOWN",
+      "salinity_estimated_dsm": null
+    },
+    "provenance": {
+      "nasa_power": {
+        "source": "NASA POWER Climatology API",
+        "retrieval_date": "2026-10-01T00:00:00Z",
+        "quality_flag": "VALID_FIXTURE",
+        "variables": ["T2M", "RH2M", "WS2M", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR"]
+      },
+      "soilgrids": {
+        "source": "ISRIC SoilGrids v2.0 REST API",
+        "retrieval_date": "2026-10-01T00:00:00Z",
+        "quality_flag": "VALID_FIXTURE",
+        "depth_interval": "0-30cm weighted",
+        "note": "SoilGrids does NOT provide salinity measurements. Unknown salinity remains explicitly UNKNOWN."
+      }
+    }
+  },
+  "new_valley": {
+    "location_name": "New Valley / Kharga (الوادي الجديد - واحة الخارجة)",
+    "coordinates": {
+      "latitude": 25.45,
+      "longitude": 30.55
+    },
+    "climate": {
+      "annual_mean_temp_c": 24.8,
+      "summer_mean_temp_c": 33.2,
+      "winter_mean_temp_c": 15.6,
+      "relative_humidity_pct": 32.0,
+      "wind_speed_ms": 4.1,
+      "solar_radiation_kwh_m2_day": 6.7,
+      "annual_precipitation_mm": 2.0
+    },
+    "soil": {
+      "ph_water": 8.25,
+      "organic_carbon_g_kg": 3.8,
+      "clay_pct": 12.0,
+      "silt_pct": 20.0,
+      "sand_pct": 68.0,
+      "bulk_density_cg_cm3": 152.0,
+      "cation_exchange_capacity_cmolc_kg": 14.5,
+      "texture_class": "Sandy Loam",
+      "salinity_status": "UNKNOWN",
+      "salinity_estimated_dsm": null
+    },
+    "provenance": {
+      "nasa_power": {
+        "source": "NASA POWER Climatology API",
+        "retrieval_date": "2026-10-01T00:00:00Z",
+        "quality_flag": "VALID_FIXTURE",
+        "variables": ["T2M", "RH2M", "WS2M", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR"]
+      },
+      "soilgrids": {
+        "source": "ISRIC SoilGrids v2.0 REST API",
+        "retrieval_date": "2026-10-01T00:00:00Z",
+        "quality_flag": "VALID_FIXTURE",
+        "depth_interval": "0-30cm weighted",
+        "note": "SoilGrids does NOT provide salinity measurements. Unknown salinity remains explicitly UNKNOWN."
+      }
+    }
+  }
+}
