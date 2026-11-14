@@ -24,3 +24,26 @@
   * Confirmed that Track B schemas remain the contract; Track A modules will calculate internally in SI units and adapter will map to schemas using `units_eg`.
 * **Uncertainties / Blockers:**
   * None. Baseline is 100% green.
+
+---
+
+## Task 1: Data Loaders and Validation
+* **What changed:**
+  * Implemented typed, robust data loaders and validators in `src/data/loaders.py` for all 6 data tables:
+    * `CropProfileRecord` & `load_crop_profiles()` (validates temperature, pH, cycle days, yields, status)
+    * `CropPriceRecord` & `load_crop_prices()` (validates bounds and status)
+    * `CostItemRecord` & `load_cost_assumptions()` with `get_crop_cost_items()` (rent toggle support)
+    * `RegulationRecord` & `load_regulations()` (info, flag, hard rules)
+    * `RotationRuleRecord` & `load_rotation_rules()` (bonus, hard, soft rules)
+    * `SourceRegistryRecord` & `load_sources_registry()` (tracking coverage for Egypt)
+  * Created comprehensive test suite in `tests/test_data_loaders.py` with hand-computed arithmetic in comments.
+  * Full test suite passing (69 tests).
+* **Files touched:**
+  * `src/data/loaders.py` (created)
+  * `tests/test_data_loaders.py` (created)
+* **Decisions made:**
+  * Standardized data resolution: look in local `data/` or relative to repo root if path is given as directory or filename.
+  * Checked that status (`ai_draft_unverified`) and confidence levels are preserved on every record.
+* **Uncertainties / Blockers:**
+  * None.
+
