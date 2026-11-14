@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>نبتة - المساعد الزراعي الذكي لمزارعي مصر</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1B5E20">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="logo-area">
+        <span class="logo-icon">🌱</span>
+        <div>
+          <div class="logo-title">نَبْتَة</div>
+          <div class="logo-sub">مساعد الفلاح الذكي</div>
+        </div>
+      </div>
+      <a href="tel:19561" class="help-btn" title="الاتصال بالإرشاد الزراعي">
+        <span>📞</span>
+        <span>المرشد الزراعي</span>
+      </a>
+    </header>
+
+    <main>
+      <!-- Disclaimer Alert -->
+      <div class="disclaimer-banner">
+        ⚠️ تنبيه: الحسابات مبنية على بيانات ناسا ومعهد الأراضي، وهي <strong>تقدير استرشادي مش ضمان</strong>.
+      </div>
+
+      <!-- Voice Interaction Hero -->
+      <section class="voice-hero">
+        <button id="micBtn" class="mic-btn" aria-label="اضغط للتحدث بصوتك">
+          🎙️
+        </button>
+        <div id="micStatus" class="mic-status">دوس هنا واتكلم يا حاج</div>
+        <div id="micHint" class="mic-hint">قول مثلاً: «عندي ٣ فدادين في كفر الشيخ، وبروي بالمناوبة، وكنت زارع قمح»</div>
+        <div id="liveTranscriptBox" class="live-transcript-box"></div>
+      </section>
+
+      <!-- Confirmation Dialogue Card -->
+      <section id="confirmationCard" class="confirmation-card">
+        <h3><span>❓</span> تأكيد البيانات</h3>
+        <p id="confirmationText" style="font-weight: 600; font-size: 18px;"></p>
+        <div class="confirm-actions">
+          <button id="btnConfirmYes" class="btn-confirm">✅ أيوه، صح</button>
+          <button id="btnConfirmNo" class="btn-reject">❌ لأ، عدل</button>
+        </div>
+      </section>
+
+      <!-- Results: 3 Recommendation Plans -->
+      <section id="recommendationsContainer" class="recommendations-container">
+        <h2 style="font-size: 22px; font-weight: 800; color: var(--primary-dark);">
+          أفضل ٣ اختيارات لأرضك:
+        </h2>
+        <div id="plansList" style="display: flex; flex-direction: column; gap: 16px;"></div>
+      </section>
+
+      <!-- Tap-based Fallback Section -->
+      <section class="tap-fallback-card">
+        <div class="tap-title">
+          <span>📱 أو اختار باللمس بدون صوت:</span>
+        </div>
+        <form id="tapFallbackForm" class="tap-grid">
+          <div class="form-group">
+            <label for="tapLocation">المحافظة / المركز:</label>
+            <select id="tapLocation">
+              <option value="Kafr El-Sheikh">كفر الشيخ (دلتا النيل)</option>
+              <option value="Minya">المنيا (مصر الوسطى / الصعيد)</option>
+              <option value="New Valley">الوادي الجديد (واحة الخارجة)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tapArea">مساحة الأرض (بالفدان):</label>
+            <select id="tapArea">
+              <option value="1.0">فدان واحد</option>
+              <option value="2.0">فدانين</option>
+              <option value="3.0" selected>٣ فدادين</option>
+              <option value="5.0">٥ فدادين</option>
+              <option value="10.0">١٠ فدادين</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tapWater">مصدر المية:</label>
+            <select id="tapWater">
+              <option value="canal_rotation" selected>ترعة بالمناوبة (دور المية)</option>
+              <option value="canal_continuous">ترعة مستمرة (بحر)</option>
+              <option value="groundwater_well">بئر ارتوازي (طلمبة أعماق)</option>
+              <option value="drainage_reuse">مياه صرف زراعي مخلوطة</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-calculate">
+            احسب لي أفضل محصول
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      مبادرة نبتة (FieldWise AI) — تحدي ناسا لتطبيقات الفضاء ٢٠٢٦
+    </footer>
+  </div>
+
+  <script src="src/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration error:', err));
+    }
+  </script>
+</body>
+</html>
