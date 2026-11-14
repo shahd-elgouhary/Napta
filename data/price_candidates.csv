@@ -1,0 +1,12 @@
+item,value,unit,season_or_date,source_url,status,notes
+wheat procurement price grade 23.5,2500,EGP per ardab,2026 season (15 Apr - 15 Aug),https://www.zawya.com/en/economy/north-africa/egypt-sets-4761-per-ardeb-as-wheat-procurement-season-targets-5mln-tons-qw2bmphf,needs_verification,confirm with Ministry of Supply decree 58 of 2026
+wheat procurement price grade 23,2450,EGP per ardab,2026 season,https://www.zawya.com/en/economy/north-africa/egypt-secures-47mln-tons-of-local-wheat-in-record-procurement-season-lordhl4i,needs_verification,
+wheat procurement price grade 22.5,2400,EGP per ardab,2026 season,https://www.zawya.com/en/economy/north-africa/egypt-secures-47mln-tons-of-local-wheat-in-record-procurement-season-lordhl4i,needs_verification,
+wheat procurement payment delay,48,hours max after delivery,2026 season,https://english.ahram.org.eg/News/574455.aspx,needs_verification,feeds the cash view (payment delay)
+wheat ardab weight,150,kg per ardab,news statement,https://cairoscene.com/News/Egypt-s-Wheat-Imports-Fall-by-700-000-Tonnes-as-Local-Output-Rises,needs_verification,do NOT put in crop_units.csv until an official source or engineer confirms
+wheat national average yield,19.56,ardab per feddan,2025 season,https://www.hellenicshippingnews.com/?p=1120820,conflicting,other sources say 18-20 and 24; use a range and ask an engineer
+diesel price,20.5,EGP per litre,April 2026,https://english.ahram.org.eg/NewsContentP/50/566887/AlAhram-Weekly/Moves-on-securing-wheat.aspx,needs_verification,pumping cost input; changes often
+agricultural daily wage,196,EGP per day,end of 2025,https://www.zawya.com/en/economy/north-africa/an-eye-on-egypts-agriculture-sector-y589ybg0,needs_verification,reported as CAPMAS data; hired labor cost input
+fertilizer subsidized via cooperative,6000,EGP per ton,May 2026,https://almanassa.com/en/news/31908,needs_verification,subsidized quota only; per-feddan allocation rules not collected
+fertilizer free market urea/nitrates,27000,EGP per ton (reported range 26000-28000),May 2026,https://almanassa.com/en/news/31908,needs_verification,very volatile (reported 38000 to 28000 in one week)
+sugar beet supply price 2025/26,2000,EGP per ton,Aug 2025,https://en.amwalalghad.com/?p=216166,conflicting,another cabinet decision reports 2400 for the 2025 season

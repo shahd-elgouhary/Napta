@@ -1,0 +1,17 @@
+{
+  "_note": "FICTIONAL demo farm for tests and the demo. Field names are provisional: adapt to src/domain/schemas.py.",
+  "farm_id": "demo-kafr-el-sheikh-01",
+  "governorate": "Kafr El-Sheikh",
+  "latitude": 31.11,
+  "longitude": 30.94,
+  "area_m2": 12602.49,
+  "water_category": "canal_rotation",
+  "water_volume_m3_per_season": null,
+  "soil_description": "clay",
+  "salinity_ece_dsm": null,
+  "budget_egp": 60000,
+  "history": [{"season": "winter", "crop_id": "wheat"}],
+  "goal_weights": {"profit": 0.5, "water": 0.3, "safety": 0.2},
+  "input_mode": "form",
+  "status": "farmer_said"
+}

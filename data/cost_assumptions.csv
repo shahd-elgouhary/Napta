@@ -1,0 +1,81 @@
+crop_id,item,value_egp_per_feddan_per_season,basis,date,source,status,confidence,default_included
+wheat,seed,2500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+wheat,fertilizer,4500,AI estimate using subsidized and market fertilizer prices in price_candidates.csv,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+wheat,crop_protection,600,AI estimate,2026-11,none,ai_draft_unverified,low,true
+wheat,hired_labor,3920,20 labor days x EGP 196 daily wage,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+wheat,machinery_hire,5000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+wheat,irrigation_pumping,2500,AI estimate (diesel EGP 20.5 per litre),2026-11,price_candidates.csv,ai_draft_unverified,low,true
+wheat,transport,800,AI estimate,2026-11,none,ai_draft_unverified,low,true
+wheat,trader_commission,0,sold to government procurement,2026-11,none,ai_draft_unverified,medium,true
+wheat,rent,12000,AI estimate for one winter season,2026-11,none,ai_draft_unverified,very_low,false
+wheat,other,500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,seed,1500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,fertilizer,2500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,crop_protection,200,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,hired_labor,5880,30 labor days x EGP 196 daily wage (cuts),2026-11,price_candidates.csv,ai_draft_unverified,low,true
+berseem,machinery_hire,3000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,irrigation_pumping,3000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,transport,0,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,trader_commission,0,AI estimate,2026-11,none,ai_draft_unverified,low,true
+berseem,rent,12000,AI estimate for one winter season,2026-11,none,ai_draft_unverified,very_low,false
+berseem,other,300,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,seed,3500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,fertilizer,2000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,crop_protection,1200,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,hired_labor,5880,30 labor days x EGP 196 daily wage,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+faba_bean,machinery_hire,3500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,irrigation_pumping,2000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,transport,800,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,trader_commission,1200,AI estimate,2026-11,none,ai_draft_unverified,low,true
+faba_bean,rent,12000,AI estimate for one winter season,2026-11,none,ai_draft_unverified,very_low,false
+faba_bean,other,500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,seed,3500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,fertilizer,5500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,crop_protection,1000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,hired_labor,7840,40 labor days x EGP 196 daily wage,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+sugar_beet,machinery_hire,6000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,irrigation_pumping,3500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,transport,3000,AI estimate (delivery to factory),2026-11,none,ai_draft_unverified,low,true
+sugar_beet,trader_commission,0,contract supply to factory,2026-11,none,ai_draft_unverified,low,true
+sugar_beet,rent,16000,AI estimate for a long-cycle season,2026-11,none,ai_draft_unverified,very_low,false
+sugar_beet,other,500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,seed,5000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,fertilizer,6000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,crop_protection,2500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,hired_labor,11760,60 labor days x EGP 196 daily wage,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+onion,machinery_hire,4000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,irrigation_pumping,3000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,transport,4000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,trader_commission,5000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+onion,rent,14000,AI estimate for one winter season,2026-11,none,ai_draft_unverified,very_low,false
+onion,other,800,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,seed,2000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,fertilizer,5500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,crop_protection,800,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,hired_labor,5880,30 labor days x EGP 196 daily wage,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+maize,machinery_hire,5000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,irrigation_pumping,4500,AI estimate (more irrigations in summer),2026-11,none,ai_draft_unverified,low,true
+maize,transport,1200,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,trader_commission,1000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+maize,rent,12000,AI estimate for one summer season,2026-11,none,ai_draft_unverified,very_low,false
+maize,other,500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+rice,seed,1200,AI estimate (nursery),2026-11,none,ai_draft_unverified,low,true
+rice,fertilizer,5000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+rice,crop_protection,1500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+rice,hired_labor,7840,40 labor days x EGP 196 daily wage,2026-11,price_candidates.csv,ai_draft_unverified,low,true
+rice,machinery_hire,6500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+rice,irrigation_pumping,6000,AI estimate (flooded field),2026-11,none,ai_draft_unverified,low,true
+rice,transport,1500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+rice,trader_commission,1000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+rice,rent,12000,AI estimate for one summer season,2026-11,none,ai_draft_unverified,very_low,false
+rice,other,500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,seed,1500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,fertilizer,5000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,crop_protection,4000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,hired_labor,11760,60 labor days x EGP 196 daily wage (picking),2026-11,price_candidates.csv,ai_draft_unverified,low,true
+cotton,machinery_hire,4500,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,irrigation_pumping,4000,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,transport,1200,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,trader_commission,0,AI estimate,2026-11,none,ai_draft_unverified,low,true
+cotton,rent,14000,AI estimate for one summer season,2026-11,none,ai_draft_unverified,very_low,false
+cotton,other,500,AI estimate,2026-11,none,ai_draft_unverified,low,true

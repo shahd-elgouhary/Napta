@@ -1,0 +1,5 @@
+crop,unit,kg_per_unit,source
+wheat,ardab,150,"news report https://cairoscene.com/News/Egypt-s-Wheat-Imports-Fall-by-700-000-Tonnes-as-Local-Output-Rises (needs_verification)"
+faba_bean,ardab,155,"AI recalled value (ai_draft_unverified)"
+maize,ardab,140,"AI recalled value (ai_draft_unverified)"
+cotton,qantar_seed_cotton,157.5,"AI recalled value for seed cotton (ai_draft_unverified)"

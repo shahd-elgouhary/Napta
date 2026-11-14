@@ -1,0 +1,5 @@
+rule_id,crop_id,scope,season,rule_type,rule_text,source,last_checked,status
+wheat_procurement,wheat,national,2026,info,"Government procurement price EGP 2400-2500 per ardab by purity grade; payment within 48 hours; season 15 Apr - 15 Aug 2026",https://www.zawya.com/en/economy/north-africa/egypt-sets-4761-per-ardeb-as-wheat-procurement-season-targets-5mln-tons-qw2bmphf,2026-11-13,needs_verification
+rice_area_limit,rice,by_governorate,summer,flag,"Rice planting area is restricted by governorate. Show a warning for rice; allow the user to enter a feddan limit that then becomes a hard constraint",none (policy known generally; exact limits not collected),2026-11-13,ai_draft_unverified
+sugar_beet_contract,sugar_beet,national,winter,info,"Sold to sugar factories at a cabinet-set supply price; contract required",https://en.amwalalghad.com/?p=216166,2026-11-13,needs_verification
+cotton_area_policy,cotton,national,summer,flag,"Cotton area and marketing follow state policy that changes by season; show a warning to check the current season rules",none,2026-11-13,ai_draft_unverified

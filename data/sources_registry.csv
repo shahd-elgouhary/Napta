@@ -1,0 +1,20 @@
+source,url,covers_egypt,what_it_feeds,priority,notes,checked_date
+NASA POWER,https://power.larc.nasa.gov/,yes,climate T2M RH2M WS2M radiation rain; ET0 inputs (A4),core,already used in Shahd's repo,2026-11-13
+ISRIC SoilGrids,https://www.isric.org/explore/soilgrids,yes,soil pH texture carbon (A3),core,no salinity; coarse 250m; already used,2026-11-13
+FAO GAEZ v5,https://gaez.fao.org/,yes,cross-check for crop suitability and attainable yield (A3),high,about 9 km grid; use as a reference not as truth; verify Egypt cells,2026-11-13
+FAOSTAT,https://www.fao.org/faostat/,yes,national yield area producer price context,high,national aggregate only; not farm level,2026-11-13
+CAPMAS annual bulletin of crop area and plant production,https://censusinfo.capmas.gov.eg/,yes,governorate crop area and production; wages; price indices,high,some years lack winter crop or production data; Arabic; needs manual extraction,2026-11-13
+Ministry of Agriculture Economic Affairs Sector,https://moa.gov.eg/,yes,cost and price bulletins; recommended varieties; planting dates,high,need exact publications and access; ask extension engineer,2026-11-13
+Ministry of Supply and Internal Trade,https://www.msit.gov.eg/,yes,wheat procurement price and rules (A5 regulatory layer),high,price changes each season,2026-11-13
+Agricultural Bank of Egypt,https://www.abe.com.eg/,partial,crop loan terms (budget constraint context),medium,no open farm dataset found; press releases only; ask bank or cooperative for per-feddan credit categories,2026-11-13
+FEWS NET Egypt data book,https://help.fews.net/fde/v3/egypt-data-book,yes,pointer to CAPMAS crop series,medium,secondary source,2026-11-13
+NASA SMAP,https://www.earthdata.nasa.gov/data/platforms/space-based-platforms/smap,yes,soil moisture context,low,coarse (km scale); stretch goal; do not present as yield proof,2026-11-13
+NASA Earthdata (MODIS NDVI / IMERG rain),https://www.earthdata.nasa.gov/,yes,vegetation and rainfall context,low,stretch goal,2026-11-13
+OpenET,https://openetdata.org/,no,none,skip,coverage is contiguous United States only; compute ET0 with FAO-56 from POWER instead,2026-11-13
+USDA Web Soil Survey,https://websoilsurvey.nrcs.usda.gov/app/,no,none,skip,US soils only (from my knowledge; confirm),2026-11-13
+USDA NASS QuickStats,https://quickstats.nass.usda.gov/,no,none,skip,US agriculture statistics only (from my knowledge; confirm),2026-11-13
+LANDFIRE,https://www.landfire.gov/,no,none,skip,US only (from my knowledge; confirm),2026-11-13
+USGS NLCD,https://www.usgs.gov/centers/eros/science/national-land-cover-database,no,none,skip,US only (from my knowledge; confirm),2026-11-13
+NAIP imagery,https://naip-usdaonline.hub.arcgis.com/,no,none,skip,US only (from my knowledge; confirm),2026-11-13
+CoCoRaHS,https://www.cocorahs.org/Maps,no,none,skip,volunteer rain network in North America (from my knowledge; confirm),2026-11-13
+GEDI,https://gedi.umd.edu/data,yes,none for field crops,skip,measures canopy height and biomass; not useful for this project,2026-11-13

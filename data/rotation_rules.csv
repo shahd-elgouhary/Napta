@@ -1,0 +1,5 @@
+rule_id,rule_type,applies_to,effect,rule_text,source_basis,status
+legume_before_cereal,bonus,"faba_bean|berseem -> wheat|maize|rice",soil_health_proxy_plus,"A legume followed by a cereal gets a labelled soil-health proxy bonus",general agronomy (AI recalled),ai_draft_unverified
+same_crop_same_slot_consecutive_years,hard,"onion|cotton|sugar_beet|faba_bean",reject,"Do not plant the same crop in the same season slot in two consecutive years (disease and pest build-up)",general agronomy (AI recalled),ai_draft_unverified
+same_family_consecutive_seasons,soft,all,penalty,"Same botanical family in back-to-back seasons gets a score penalty, not a rejection (wheat then maize is common practice in Egypt)",general agronomy (AI recalled),ai_draft_unverified
+rice_max_per_year,hard,rice,reject,"At most one rice crop per agricultural year",general agronomy (AI recalled),ai_draft_unverified

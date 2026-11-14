@@ -1,0 +1,9 @@
+crop_id,price_type,price_low_egp_per_kg,price_high_egp_per_kg,original_quote,price_date,source_url,status,confidence,notes
+wheat,government_procurement,16.00,16.67,"EGP 2,400-2,500 per ardab (150 kg) by purity grade",2026-04,https://www.zawya.com/en/economy/north-africa/egypt-sets-4761-per-ardeb-as-wheat-procurement-season-targets-5mln-tons-qw2bmphf,needs_verification,medium,"Paid within 48 hours; season 15 Apr - 15 Aug 2026; verify ardab weight"
+sugar_beet,government_supply_price,2.00,2.40,"EGP 2,000 per ton (2025/26 cabinet decision) vs EGP 2,400 per ton (2025 season decision)",2025-08,https://en.amwalalghad.com/?p=216166,conflicting,low,"Two cabinet figures found; newer source says 2,000; verify before use"
+rice,farm_gate_reference,12.00,19.10,"FAOSTAT-derived reading about EGP 19.14 per kg (July 2026), unclear if paddy or milled",2026-07,https://www.selinawamucii.com/insights/prices/egypt/rice/,ai_draft_unverified,very_low,"Low end is an AI estimate for paddy; replace with a Ministry price"
+onion,farm_gate_reference,5.00,12.00,"Retail EGP 14-15 per kg (Jun 2026); one site shows farm gate 15.77",2026-06,https://www.selinawamucii.com/insights/prices/egypt/onions/,ai_draft_unverified,very_low,"Very volatile; farm gate is below retail; crowding stress test applies"
+maize,farm_gate_estimate,10.00,13.00,"No source found",2026-11,,ai_draft_unverified,very_low,"AI estimate; replace from Ministry bulletin or cooperative"
+faba_bean,farm_gate_estimate,25.00,38.00,"No source found",2026-11,,ai_draft_unverified,very_low,"AI estimate; replace from Ministry bulletin or cooperative"
+cotton,farm_gate_estimate,50.00,75.00,"No source found (per kg of seed cotton)",2026-11,,ai_draft_unverified,very_low,"AI estimate; replace with the guaranteed price when verified"
+berseem,farm_gate_estimate,0.70,1.30,"No source found (per kg green fodder)",2026-11,,ai_draft_unverified,very_low,"AI estimate; often sold standing per feddan, not per kg"
