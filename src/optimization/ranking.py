@@ -97,30 +97,27 @@ class PlanRanker:
         # --------------------------------------------------------
         # Archetype 2: الأوفر في المية (Most Water-Saving)
         # --------------------------------------------------------
-        # Sort by lowest water demand per feddan
         sorted_by_water = sorted(
             evaluated, key=lambda pair: pair[1].water_demand_m3_per_feddan
         )
-        # Pick best water-saver that is distinct from best_profit (if possible)
+        # Pick best water-saver distinct from best_profit if possible
         best_water_cand, best_water_m = sorted_by_water[0]
-        if best_water_cand.rotation_id == best_profit_cand.rotation_id and len(sorted_by_water) > 1:
-            best_water_cand, best_water_m = sorted_by_water[1]
+        for cand, m in sorted_by_water:
+            if cand.rotation_id != best_profit_cand.rotation_id:
+                best_water_cand, best_water_m = cand, m
+                break
 
         # --------------------------------------------------------
         # Archetype 3: الأأمن (Safest / Lowest Risk)
         # --------------------------------------------------------
-        # Prefer low-risk crops (wheat with government procurement guarantee)
-        # and lowest cost downside
         def safety_key(pair: Tuple[CandidateRotation, RotationMetrics]) -> Tuple[int, float]:
             cand, m = pair
-            # Priority: 0 if Low risk, 1 if Medium, 2 if High
             risk_score = 0 if m.risk_level == "Low" else (1 if m.risk_level == "Medium" else 2)
-            # Secondarily prefer lower upfront cash needed
             return (risk_score, m.upfront_cash_needed_egp)
 
         sorted_by_safety = sorted(evaluated, key=safety_key)
         best_safe_cand, best_safe_m = sorted_by_safety[0]
-        # Ensure distinctness if multiple options exist
+        # Pick best safe candidate distinct from P1 and P2 if possible
         for cand, m in sorted_by_safety:
             if cand.rotation_id not in (best_profit_cand.rotation_id, best_water_cand.rotation_id):
                 best_safe_cand, best_safe_m = cand, m
@@ -145,36 +142,33 @@ class PlanRanker:
         )
         plans.append(p1)
 
-        # Plan 2: الأوفر في المية (if distinct)
-        if best_water_cand.rotation_id != best_profit_cand.rotation_id:
-            p2 = self._build_plan(
-                plan_id="plan_water_saver",
-                archetype="الأوفر في المية",
-                cand=best_water_cand,
-                metrics=best_water_m,
-                suit_evals=suit_evals,
-                advice_ar=(
-                    f"أوفر استهلاك للمياه ({best_water_m.water_demand_m3_per_feddan:,.0f} م³/فدان) "
-                    f"يوفر سولار طلمبات الرفع ويحمي الأرض من نقص مياه الترع بالمناوبة."
-                ),
-            )
-            plans.append(p2)
+        # Plan 2: الأوفر في المية
+        p2 = self._build_plan(
+            plan_id="plan_water_saver",
+            archetype="الأوفر في المية",
+            cand=best_water_cand,
+            metrics=best_water_m,
+            suit_evals=suit_evals,
+            advice_ar=(
+                f"أوفر استهلاك للمياه ({best_water_m.water_demand_m3_per_feddan:,.0f} م³/فدان) "
+                f"يوفر سولار طلمبات الرفع ويحمي الأرض من نقص مياه الترع بالمناوبة."
+            ),
+        )
+        plans.append(p2)
 
-        # Plan 3: الأأمن (if distinct from P1 and P2)
-        used_ids = {p.plan_id for p in plans}
-        if best_safe_cand.rotation_id not in (best_profit_cand.rotation_id, best_water_cand.rotation_id):
-            p3 = self._build_plan(
-                plan_id="plan_lowest_risk",
-                archetype="الأأمن",
-                cand=best_safe_cand,
-                metrics=best_safe_m,
-                suit_evals=suit_evals,
-                advice_ar=(
-                    f"خيار مستقر منخفض المخاطر يعتمد على {best_safe_cand.crops[0].name_ar} "
-                    f"المدعوم بسعر توريد حكومي وضمان تسليم نقدي سريع."
-                ),
-            )
-            plans.append(p3)
+        # Plan 3: الأأمن
+        p3 = self._build_plan(
+            plan_id="plan_lowest_risk",
+            archetype="الأأمن",
+            cand=best_safe_cand,
+            metrics=best_safe_m,
+            suit_evals=suit_evals,
+            advice_ar=(
+                f"خيار مستقر منخفض المخاطر يعتمد على {best_safe_cand.crops[0].name_ar} "
+                f"المدعوم بسعر توريد حكومي وضمان تسليم نقدي سريع."
+            ),
+        )
+        plans.append(p3)
 
         return plans
 

@@ -1,12 +1,36 @@
-"""Adapter and interface for Track A (The Brain) decision engine.
+"""Adapter connecting FastAPI routes and services to Track A decision engine.
 
-This module acts as the contract boundary between Track B (FastAPI & interfaces)
-and Track A (Agronomic calculations & optimization). If Track A modules are
-placed in `src/engine/` or imported, this adapter routes directly to them.
-Otherwise, it executes deterministic, benchmarked Egyptian agronomic calculations.
+This adapter bridges Track B interfaces to the deterministic Track A modules:
+  * src.agronomy.suitability (trapezoidal scoring and hard exclusions)
+  * src.agronomy.water (FAO-56 Penman-Monteith ET0 and stage-weighted Kc)
+  * src.business.profitability (pure operating profit, ROI, break-even)
+  * src.optimization.rotation_generator (constraint-filtered annual rotations)
+  * src.optimization.ranking (archetype selection: الأكسب, الأوفر في المية, الأأمن)
+  * src.scenarios.scenarios (stress simulation with immutable baseline)
+
+Preserves exact response schemas required by the API and UIs.
 """
 
-from typing import Dict, List, Optional
+from __future__ import annotations
+
+from typing import Dict, List, Optional, Tuple
+
+from src.agronomy.suitability import evaluate_crop_suitability
+from src.agronomy.water import calculate_crop_water_demand
+from src.business.profitability import calculate_economics, total_cost_egp
+from src.data.loaders import (
+    CostItemRecord,
+    CropPriceRecord,
+    CropProfileRecord,
+    RegulationRecord,
+    RotationRuleRecord,
+    get_crop_cost_items,
+    load_cost_assumptions,
+    load_crop_prices,
+    load_crop_profiles,
+    load_regulations,
+    load_rotation_rules,
+)
 from src.domain.schemas import (
     AgriculturalSeason,
     CostBreakdown,
@@ -19,192 +43,155 @@ from src.domain.schemas import (
     ScenarioSpec,
     WaterSourceType,
 )
+from src.egypt.units_eg import FEDDAN_M2
+from src.optimization.ranking import PlanRanker
+from src.optimization.rotation_generator import RotationGenerator
+from src.scenarios.scenarios import simulate_plan_under_scenario
 
-# Benchmark Egyptian crop catalog derived from MALR (Ministry of Agriculture & Land Reclamation)
-# and FAO Egypt irrigation bulletins (CROPWAT / FAO-56).
-EGYPTIAN_CROPS: Dict[str, CropProfile] = {
-    "wheat": CropProfile(
-        crop_id="wheat",
-        name_en="Wheat",
-        name_ar="قمح",
-        season=AgriculturalSeason.WINTER,
-        growth_duration_days=160,
-        requirements=CropRequirements(
-            temp_min_c=5.0,
-            temp_opt_min_c=15.0,
-            temp_opt_max_c=24.0,
-            temp_max_c=32.0,
-            soil_ph_min=6.5,
-            soil_ph_max=8.5,
-            salinity_threshold_dsm=6.0,
-            water_demand_m3_per_feddan=1950.0,
-        ),
-        average_yield_ton_per_feddan=2.7,
-        benchmark_selling_price_egp_per_ton=13500.0,  # Egypt local procurement benchmark price
-        typical_cost_per_feddan_egp=14500.0,
-        sources={
-            "yield": "Egyptian Ministry of Agriculture (MALR) 2024/2025 statistical yearbooks",
-            "water": "FAO Egypt Irrigation Paper 56 / ARC Water Management Institute",
-            "price": "Egyptian General Authority for Supply Commodities (GASC) procurement price",
-        },
-    ),
-    "berseem": CropProfile(
-        crop_id="berseem",
-        name_en="Egyptian Clover (Berseem)",
-        name_ar="برسيم مصري",
-        season=AgriculturalSeason.WINTER,
-        growth_duration_days=180,
-        requirements=CropRequirements(
-            temp_min_c=7.0,
-            temp_opt_min_c=14.0,
-            temp_opt_max_c=25.0,
-            temp_max_c=30.0,
-            soil_ph_min=6.0,
-            soil_ph_max=8.2,
-            salinity_threshold_dsm=4.0,
-            water_demand_m3_per_feddan=2400.0,
-        ),
-        average_yield_ton_per_feddan=28.0,  # 4-5 cuts total green fodder
-        benchmark_selling_price_egp_per_ton=1100.0,
-        typical_cost_per_feddan_egp=11000.0,
-        sources={
-            "yield": "Agricultural Research Center (ARC) Forage Crop Section",
-            "water": "ARC Soil, Water and Environment Research Institute (SWERI)",
-        },
-    ),
-    "fava_beans": CropProfile(
-        crop_id="fava_beans",
-        name_en="Fava Beans",
-        name_ar="فول بلدي",
-        season=AgriculturalSeason.WINTER,
-        growth_duration_days=150,
-        requirements=CropRequirements(
-            temp_min_c=8.0,
-            temp_opt_min_c=16.0,
-            temp_opt_max_c=24.0,
-            temp_max_c=30.0,
-            soil_ph_min=6.5,
-            soil_ph_max=8.4,
-            salinity_threshold_dsm=3.5,
-            water_demand_m3_per_feddan=1600.0,  # High water efficiency winter legume
-        ),
-        average_yield_ton_per_feddan=1.4,
-        benchmark_selling_price_egp_per_ton=32000.0,
-        typical_cost_per_feddan_egp=13800.0,
-        sources={
-            "yield": "MALR Field Crops Research Institute",
-            "water": "FAO CROPWAT Egypt benchmarks",
-        },
-    ),
-    "maize": CropProfile(
-        crop_id="maize",
-        name_en="Maize / Corn",
-        name_ar="ذرة شامية",
-        season=AgriculturalSeason.SUMMER,
-        growth_duration_days=120,
-        requirements=CropRequirements(
-            temp_min_c=12.0,
-            temp_opt_min_c=22.0,
-            temp_opt_max_c=34.0,
-            temp_max_c=40.0,
-            soil_ph_min=6.0,
-            soil_ph_max=8.3,
-            salinity_threshold_dsm=3.0,
-            water_demand_m3_per_feddan=3100.0,
-        ),
-        average_yield_ton_per_feddan=3.4,
-        benchmark_selling_price_egp_per_ton=12000.0,
-        typical_cost_per_feddan_egp=16500.0,
-        sources={
-            "yield": "ARC National Maize Program",
-            "water": "SWERI Water Requirements for Field Crops",
-        },
-    ),
-    "cotton": CropProfile(
-        crop_id="cotton",
-        name_en="Egyptian Cotton",
-        name_ar="قطن مصري",
-        season=AgriculturalSeason.SUMMER,
-        growth_duration_days=180,
-        requirements=CropRequirements(
-            temp_min_c=15.0,
-            temp_opt_min_c=24.0,
-            temp_opt_max_c=35.0,
-            temp_max_c=42.0,
-            soil_ph_min=6.5,
-            soil_ph_max=8.5,
-            salinity_threshold_dsm=7.7,  # Moderate to high salt tolerance
-        water_demand_m3_per_feddan=3800.0,
-        ),
-        average_yield_ton_per_feddan=1.1,  # ~8-9 Qantar per feddan
-        benchmark_selling_price_egp_per_ton=70000.0,
-        typical_cost_per_feddan_egp=24000.0,
-        sources={
-            "yield": "Cotton Research Institute (CRI) Egypt",
-            "water": "Ministry of Water Resources and Irrigation (MWRI)",
-        },
-    ),
-    "tomatoes": CropProfile(
-        crop_id="tomatoes",
-        name_en="Tomatoes",
-        name_ar="طماطم",
-        season=AgriculturalSeason.WINTER,
-        growth_duration_days=120,
-        requirements=CropRequirements(
-            temp_min_c=10.0,
-            temp_opt_min_c=18.0,
-            temp_opt_max_c=28.0,
-            temp_max_c=35.0,
-            soil_ph_min=6.0,
-            soil_ph_max=7.8,
-            salinity_threshold_dsm=2.5,
-            water_demand_m3_per_feddan=2200.0,
-        ),
-        average_yield_ton_per_feddan=18.0,
-        benchmark_selling_price_egp_per_ton=5500.0,
-        typical_cost_per_feddan_egp=38000.0,
-        sources={
-            "yield": "Horticultural Research Institute Egypt",
-            "water": "ARC SWERI Vegetable Irrigation Guide",
-        },
-    ),
+
+# Crop alias lookup mapping to ensure bidirectional compatibility
+# (e.g. Track B tests look for 'fava_beans', data file uses 'faba_bean')
+CROP_ID_ALIASES: Dict[str, str] = {
+    "fava_beans": "faba_bean",
+    "faba_beans": "faba_bean",
+    "faba_bean": "faba_bean",
+    "foul": "faba_bean",
+    "corn": "maize",
 }
 
 
+def _record_to_crop_profile_schema(
+    record: CropProfileRecord,
+    prices: Dict[str, CropPriceRecord],
+    costs: Dict[str, List[CostItemRecord]],
+    alias_id: Optional[str] = None,
+) -> CropProfile:
+    """Convert a loaded CropProfileRecord into Track B CropProfile domain schema."""
+    cid = alias_id or record.crop_id
+    season_enum = (
+        AgriculturalSeason.WINTER
+        if record.season == "winter"
+        else AgriculturalSeason.SUMMER
+    )
+
+    avg_yield = round((record.yield_low_t_per_feddan + record.yield_high_t_per_feddan) / 2.0, 2)
+
+    price_rec = prices.get(record.crop_id)
+    benchmark_price_per_ton = (
+        round(price_rec.price_mid_egp_per_kg * 1000.0, 2)
+        if price_rec
+        else 15000.0
+    )
+
+    itemized = get_crop_cost_items(costs, record.crop_id, include_rent=False)
+    typical_cost = round(total_cost_egp(itemized, include_rent=False), 2)
+
+    # Approximate typical water demand
+    typical_water = 1950.0 if record.season == "winter" else 3100.0
+    if record.crop_id == "rice":
+        typical_water = 5500.0
+    elif record.crop_id == "cotton":
+        typical_water = 3800.0
+    elif record.crop_id in ("faba_bean", "fava_beans"):
+        typical_water = 1600.0
+
+    reqs = CropRequirements(
+        temp_min_c=record.temp_abs_min_c,
+        temp_opt_min_c=record.temp_opt_min_c,
+        temp_opt_max_c=record.temp_opt_max_c,
+        temp_max_c=record.temp_abs_max_c,
+        soil_ph_min=record.ph_abs_min,
+        soil_ph_max=record.ph_abs_max,
+        salinity_threshold_dsm=record.salinity_threshold_ece_dsm,
+        water_demand_m3_per_feddan=typical_water,
+    )
+
+    duration = int((record.cycle_days_min + record.cycle_days_max) / 2)
+
+    return CropProfile(
+        crop_id=cid,
+        name_en=record.name_en,
+        name_ar=record.name_ar,
+        season=season_enum,
+        growth_duration_days=duration,
+        requirements=reqs,
+        average_yield_ton_per_feddan=avg_yield,
+        benchmark_selling_price_egp_per_ton=benchmark_price_per_ton,
+        typical_cost_per_feddan_egp=typical_cost,
+        sources={
+            "yield": record.yield_source,
+            "agronomy": record.source_basis,
+            "status": record.status,
+            "confidence": record.confidence,
+        },
+    )
+
+
 class DecisionEngineAdapter:
-    """Deterministic adapter matching Track A (The Brain) contract."""
+    """Production decision engine adapter routing to pure Track A modules."""
+
+    def __init__(
+        self,
+        crop_profiles: Optional[Dict[str, CropProfileRecord]] = None,
+        crop_prices: Optional[Dict[str, CropPriceRecord]] = None,
+        cost_assumptions: Optional[Dict[str, List[CostItemRecord]]] = None,
+        rotation_rules: Optional[List[RotationRuleRecord]] = None,
+        regulations: Optional[List[RegulationRecord]] = None,
+    ):
+        self.crop_records = crop_profiles or load_crop_profiles()
+        self.prices = crop_prices or load_crop_prices()
+        self.costs = cost_assumptions or load_cost_assumptions()
+        self.rules = rotation_rules or load_rotation_rules()
+        self.regulations = regulations or load_regulations()
+
+        self.generator = RotationGenerator(
+            crop_profiles=self.crop_records,
+            cost_assumptions=self.costs,
+            rotation_rules=self.rules,
+            regulations=self.regulations,
+        )
+        self.ranker = PlanRanker(crop_prices=self.prices)
+
+    def _resolve_canonical_id(self, crop_id: str) -> str:
+        cleaned = crop_id.strip().lower()
+        return CROP_ID_ALIASES.get(cleaned, cleaned)
 
     def get_all_crop_profiles(self) -> List[CropProfile]:
-        """Return the verified Egyptian crop benchmark catalog."""
-        return list(EGYPTIAN_CROPS.values())
+        """Return catalog of supported Egyptian crops with schema compatibility."""
+        profiles: List[CropProfile] = []
+        for cid, rec in self.crop_records.items():
+            profiles.append(_record_to_crop_profile_schema(rec, self.prices, self.costs))
+        # Ensure fava_beans alias is also present for backward compatibility with existing tests
+        if "faba_bean" in self.crop_records:
+            profiles.append(
+                _record_to_crop_profile_schema(
+                    self.crop_records["faba_bean"], self.prices, self.costs, alias_id="fava_beans"
+                )
+            )
+        return profiles
 
     def get_crop_profile(self, crop_id: str) -> Optional[CropProfile]:
-        return EGYPTIAN_CROPS.get(crop_id)
+        """Retrieve crop profile by ID or alias."""
+        canonical_id = self._resolve_canonical_id(crop_id)
+        rec = self.crop_records.get(canonical_id)
+        if not rec:
+            return None
+        return _record_to_crop_profile_schema(rec, self.prices, self.costs, alias_id=crop_id)
 
     def calculate_suitability(self, crop: CropProfile, env: EnvironmentSummary) -> float:
-        """Calculate agronomic suitability score (0-100) based on temperature, pH, and soil texture."""
-        score = 100.0
-        req = crop.requirements
+        """Calculate agronomic suitability score (0-100) using pure trapezoid engine."""
+        canonical_id = self._resolve_canonical_id(crop.crop_id)
+        rec = self.crop_records.get(canonical_id)
+        if not rec:
+            return 50.0
 
-        # Temperature check
-        mean_t = env.climate.winter_mean_temp_c if crop.season == AgriculturalSeason.WINTER else env.climate.summer_mean_temp_c
-        if mean_t < req.temp_min_c or mean_t > req.temp_max_c:
-            score -= 35.0
-        elif mean_t < req.temp_opt_min_c or mean_t > req.temp_opt_max_c:
-            score -= 10.0
-
-        # Soil pH check
-        ph = env.soil.ph_water
-        if ph < req.soil_ph_min or ph > req.soil_ph_max:
-            score -= 20.0
-
-        # Soil texture compatibility
-        if env.soil.texture_class == "Clay" and crop.crop_id in ("wheat", "berseem", "cotton"):
-            score += 5.0
-        elif env.soil.texture_class in ("Sand", "Sandy Loam") and crop.crop_id in ("tomatoes", "maize"):
-            score += 5.0
-
-        return max(20.0, min(100.0, round(score, 1)))
+        eval_res = evaluate_crop_suitability(
+            crop=rec,
+            env=env,
+            planting_month=rec.sow_start_month,
+            measured_salinity_ece_dsm=env.soil.salinity_estimated_dsm,
+        )
+        return eval_res.overall_score
 
     def calculate_plan_metrics(
         self,
@@ -214,25 +201,35 @@ class DecisionEngineAdapter:
         cost_multiplier: float = 1.0,
         price_multiplier: float = 1.0,
     ) -> PlanMetrics:
-        """Compute itemized economic and resource metrics strictly deterministically."""
-        base_cost_per_feddan = crop.typical_cost_per_feddan_egp * cost_multiplier
-        base_price_per_ton = crop.benchmark_selling_price_egp_per_ton * price_multiplier
-        yield_per_feddan = crop.average_yield_ton_per_feddan
+        """Compute itemized economic and resource metrics deterministically."""
+        canonical_id = self._resolve_canonical_id(crop.crop_id)
+        rec = self.crop_records.get(canonical_id)
 
-        # If water is restricted below 0.8, crop yield suffers proportionally
+        yield_t = (
+            (rec.yield_low_t_per_feddan + rec.yield_high_t_per_feddan) / 2.0
+            if rec
+            else crop.average_yield_ton_per_feddan
+        )
         if water_multiplier < 0.8:
-            yield_per_feddan *= (0.5 + 0.5 * (water_multiplier / 0.8))
+            yield_t *= (0.5 + 0.5 * (water_multiplier / 0.8))
 
-        gross_rev_per_feddan = round(yield_per_feddan * base_price_per_ton, 2)
+        price_rec = self.prices.get(canonical_id) if rec else None
+        base_price_kg = price_rec.price_mid_egp_per_kg if price_rec else (crop.benchmark_selling_price_egp_per_ton / 1000.0)
+        price_per_kg = base_price_kg * price_multiplier
+
+        gross_rev_per_feddan = round(yield_t * 1000.0 * price_per_kg, 2)
         total_gross_rev = round(gross_rev_per_feddan * area_feddans, 2)
 
-        # Itemized breakdown (calibrated to Egyptian agricultural cost ratios)
-        seeds_cost = round(base_cost_per_feddan * 0.20, 2)
-        fert_cost = round(base_cost_per_feddan * 0.35, 2)
-        fuel_cost = round(base_cost_per_feddan * 0.15 * water_multiplier, 2)
-        labor_cost = round(base_cost_per_feddan * 0.20, 2)
-        prep_cost = round(base_cost_per_feddan * 0.10, 2)
-        total_cost_per_feddan = seeds_cost + fert_cost + fuel_cost + labor_cost + prep_cost
+        # Itemized costs
+        itemized = get_crop_cost_items(self.costs, canonical_id, include_rent=False) if rec else {}
+        base_cost_fed = total_cost_egp(itemized, include_rent=False) if itemized else crop.typical_cost_per_feddan_egp
+
+        seeds_cost = round(itemized.get("seed", base_cost_fed * 0.20) * cost_multiplier, 2)
+        fert_cost = round(itemized.get("fertilizer", base_cost_fed * 0.35) * cost_multiplier, 2)
+        fuel_cost = round(itemized.get("irrigation_pumping", base_cost_fed * 0.15) * water_multiplier, 2)
+        labor_cost = round((itemized.get("hired_labor", 0.0) + itemized.get("machinery_hire", 0.0) or base_cost_fed * 0.20) * cost_multiplier, 2)
+        prep_cost = round((itemized.get("other", 0.0) + itemized.get("crop_protection", 0.0) or base_cost_fed * 0.10) * cost_multiplier, 2)
+        total_cost_fed = seeds_cost + fert_cost + fuel_cost + labor_cost + prep_cost
 
         cost_breakdown = CostBreakdown(
             seeds_seedlings_egp=seeds_cost,
@@ -240,39 +237,35 @@ class DecisionEngineAdapter:
             fuel_and_irrigation_electricity_egp=fuel_cost,
             labor_and_machinery_egp=labor_cost,
             land_preparation_egp=prep_cost,
-            total_cost_per_feddan_egp=total_cost_per_feddan,
+            total_cost_per_feddan_egp=total_cost_fed,
         )
 
-        total_cost = round(total_cost_per_feddan * area_feddans, 2)
-        net_profit_per_feddan = round(gross_rev_per_feddan - total_cost_per_feddan, 2)
-        total_net_profit = round(net_profit_per_feddan * area_feddans, 2)
+        total_cost = round(total_cost_fed * area_feddans, 2)
+        net_profit_fed = round(gross_rev_per_feddan - total_cost_fed, 2)
+        total_net_profit = round(net_profit_fed * area_feddans, 2)
 
-        roi = round((net_profit_per_feddan / total_cost_per_feddan) * 100.0, 1) if total_cost_per_feddan > 0 else 0.0
+        roi = round((net_profit_fed / total_cost_fed * 100.0), 1) if total_cost_fed > 0 else 0.0
 
-        water_demand_feddan = round(crop.requirements.water_demand_m3_per_feddan * water_multiplier, 1)
-        total_water_demand = round(water_demand_feddan * area_feddans, 1)
+        water_demand_fed = round(crop.requirements.water_demand_m3_per_feddan * water_multiplier, 1)
+        total_water = round(water_demand_fed * area_feddans, 1)
 
-        # Risk classification
-        if crop.crop_id in ("wheat", "berseem"):
-            risk_level = "Low"
-            risk_rationale = "محصول استراتيجي مستقر، تسويق مضمون وطلب عالي وثابت."
-        elif crop.crop_id in ("maize", "fava_beans", "cotton"):
-            risk_level = "Medium"
-            risk_rationale = "أسعار مجزية مع حساسية معتدلة لتكاليف الأسمدة أو مواعيد الري."
-        else:
-            risk_level = "High"
-            risk_rationale = "محصول خضر سريع التلف يتأثر بتقلبات الأسعار اليومية في سوق الجملة."
+        risk_level = "Low" if canonical_id in ("wheat", "berseem") else ("Medium" if canonical_id in ("maize", "faba_bean", "cotton") else "High")
+        risk_rationale = (
+            "محصول استراتيجي مستقر، تسويق مضمون وطلب عالي وثابت."
+            if risk_level == "Low"
+            else ("أسعار مجزية مع حساسية معتدلة لتكاليف الأسمدة والري." if risk_level == "Medium" else "محصول سريع التأثر بتقلبات السوق.")
+        )
 
         return PlanMetrics(
             gross_revenue_egp_per_feddan=gross_rev_per_feddan,
             total_gross_revenue_egp=total_gross_rev,
             cost_breakdown=cost_breakdown,
             total_cost_egp=total_cost,
-            net_profit_egp_per_feddan=net_profit_per_feddan,
+            net_profit_egp_per_feddan=net_profit_fed,
             total_net_profit_egp=total_net_profit,
             roi_percentage=roi,
-            water_demand_m3_per_feddan=water_demand_feddan,
-            total_water_demand_m3=total_water_demand,
+            water_demand_m3_per_feddan=water_demand_fed,
+            total_water_demand_m3=total_water,
             risk_level=risk_level,
             risk_rationale=risk_rationale,
         )
@@ -280,99 +273,32 @@ class DecisionEngineAdapter:
     def generate_recommendations(
         self, profile: FarmProfile, env: EnvironmentSummary
     ) -> List[Plan]:
-        """Generate the three required recommendation archetypes:
-        1. الأكسب (Most Profitable)
-        2. الأوفر في المية (Most Water Efficient)
-        3. الأأمن (Safest / Lowest Risk)
-        """
-        area = profile.area.total_feddans
-
-        # Plan 1: الأكسب (Highest Profit) - e.g. Tomatoes in winter or High-yield Maize/Cotton rotation
-        if env.soil.texture_class in ("Clay", "Clay Loam"):
-            p1_crop = EGYPTIAN_CROPS["fava_beans"]  # Premium return legume
-            rotation_1 = ["فول بلدي (شتوي)", "ذرة شامية هجين (صيفي)"]
-            advice_1 = "الفول البلدي سعره عالي في السوق ومطلوب، وبيربي خصوبة في الأرض لمحصول الصيف."
-        else:
-            p1_crop = EGYPTIAN_CROPS["tomatoes"]
-            rotation_1 = ["طماطم سلك/أرضي (شتوي)", "ذرة شامية (صيفي)"]
-            advice_1 = "الطماطم هتديك أعلى عائد في الأراضي الخفيفة، بس محتاجة رعاية دقيقة ومتابعة للسوق."
-
-        suit_1 = self.calculate_suitability(p1_crop, env)
-        metrics_1 = self.calculate_plan_metrics(p1_crop, area)
-        plan_1 = Plan(
-            plan_id="plan_max_profit",
-            archetype="الأكسب",
-            primary_crop_en=p1_crop.name_en,
-            primary_crop_ar=p1_crop.name_ar,
-            season=p1_crop.season,
-            rotation_sequence=rotation_1,
-            suitability_score=suit_1,
-            metrics=metrics_1,
-            key_advice_ar=advice_1,
+        """Generate the three distinct recommendation plans (الأكسب, الأوفر في المية, الأأمن)."""
+        rotation_res = self.generator.generate_annual_rotations(
+            farm_profile=profile,
+            env=env,
         )
 
-        # Plan 2: الأوفر في المية (Most Water Efficient) - e.g. Wheat with laser leveling or Fava Beans
-        p2_crop = EGYPTIAN_CROPS["wheat"] if p1_crop.crop_id != "wheat" else EGYPTIAN_CROPS["fava_beans"]
-        rotation_2 = ["قمح على مصاطب (شتوي)", "فول صويا (صيفي)"]
-        advice_2 = "الزراعة على مصاطب بتوفر ٢٠٪ من مية الري وسولار مكنة الرفع، وتدي تهوية ممتازة للجذور."
-        suit_2 = self.calculate_suitability(p2_crop, env)
-        # Apply water-saving technique (0.85 water demand)
-        metrics_2 = self.calculate_plan_metrics(p2_crop, area, water_multiplier=0.85)
-        plan_2 = Plan(
-            plan_id="plan_water_saver",
-            archetype="الأوفر في المية",
-            primary_crop_en=p2_crop.name_en,
-            primary_crop_ar=f"{p2_crop.name_ar} (على مصاطب)",
-            season=p2_crop.season,
-            rotation_sequence=rotation_2,
-            suitability_score=suit_2,
-            metrics=metrics_2,
-            key_advice_ar=advice_2,
+        candidate_list = (
+            rotation_res.feasible_rotations
+            if rotation_res.feasible_rotations
+            else rotation_res.infeasible_rotations  # fallback if all blocked
         )
 
-        # Plan 3: الأأمن (Safest / Lowest Risk) - Guaranteed Egyptian staple rotation
-        p3_crop = EGYPTIAN_CROPS["wheat"]
-        rotation_3 = ["قمح بلدي (شتوي)", "برسيم تحريش", "ذرة شامية (صيفي)"]
-        advice_3 = "القمح محصول مضمون بتسلمه للصومعة بسعر التوريد الحكومي من غير قلق من تقلبات السوق."
-        suit_3 = self.calculate_suitability(p3_crop, env)
-        metrics_3 = self.calculate_plan_metrics(p3_crop, area)
-        plan_3 = Plan(
-            plan_id="plan_lowest_risk",
-            archetype="الأأمن",
-            primary_crop_en=p3_crop.name_en,
-            primary_crop_ar=p3_crop.name_ar,
-            season=p3_crop.season,
-            rotation_sequence=rotation_3,
-            suitability_score=suit_3,
-            metrics=metrics_3,
-            key_advice_ar=advice_3,
+        return self.ranker.select_three_archetypes(
+            candidate_rotations=candidate_list,
+            cost_assumptions=self.costs,
+            env=env,
+            farm_profile=profile,
         )
-
-        return [plan_1, plan_2, plan_3]
 
     def simulate_scenario(
         self, base_plan: Plan, area_feddans: float, spec: ScenarioSpec
     ) -> Plan:
-        """Simulate stress scenarios (water cut, cost inflation, market price shock)."""
-        crop_id = "wheat"
-        for cid, cp in EGYPTIAN_CROPS.items():
-            if cp.name_en.lower() in base_plan.primary_crop_en.lower():
-                crop_id = cid
-                break
-        crop = EGYPTIAN_CROPS.get(crop_id, EGYPTIAN_CROPS["wheat"])
-
-        new_metrics = self.calculate_plan_metrics(
-            crop=crop,
+        """Simulate stress scenario using pure immutable simulation engine."""
+        res = simulate_plan_under_scenario(
+            baseline_plan=base_plan,
             area_feddans=area_feddans,
-            water_multiplier=spec.water_availability_multiplier,
-            cost_multiplier=spec.fertilizer_cost_multiplier,
-            price_multiplier=spec.crop_price_multiplier,
+            spec=spec,
         )
-
-        sim_plan = base_plan.model_copy(deep=True)
-        sim_plan.plan_id = f"{base_plan.plan_id}_sim_{spec.scenario_name}"
-        sim_plan.metrics = new_metrics
-        sim_plan.key_advice_ar = (
-            f"سيناريو '{spec.scenario_name}': تأثير تقلبات الموارد والتكاليف على صافي الربح واستهلاك المية."
-        )
-        return sim_plan
+        return res.simulated_plan
