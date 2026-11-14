@@ -47,3 +47,31 @@
 * **Uncertainties / Blockers:**
   * None.
 
+---
+
+## Task 2: Agronomy Engine (A3 Suitability & A4 Water Requirements)
+* **What changed:**
+  * Implemented `src/agronomy/suitability.py` (A3):
+    * Deterministic trapezoidal scoring for temperature, pH, salinity, and sowing window fit.
+    * Hard exclusions for out-of-range physical limits with detailed Arabic reasons.
+    * Explicit missing data handling: unknown salinity (from SoilGrids) is excluded from weighted mean, reported in `missing_factors`, drops confidence, and generates a field test recommendation.
+  * Implemented `src/agronomy/water.py` (A4):
+    * FAO-56 Penman-Monteith reference evapotranspiration ($ET_0$) calculation verified against official FAO-56 Box 18 (Cairo, Egypt).
+    * Explicit radiation conversion ($1\ \text{kWh}/m^2/\text{day} = 3.6\ \text{MJ}/m^2/\text{day}$).
+    * Explicit wind speed verification ($u_2 = \text{WS2M}$ at 2m measurement height).
+    * Stage-weighted $K_c$ curve across FAO-56 growth stages (20% ini, 30% dev, 35% mid, 15% late).
+    * Water volume conversion strictly through `src.egypt.units_eg`.
+  * Created unit test suite in `tests/test_agronomy.py` with hand calculations shown in comments.
+  * All 78 tests passing.
+* **Files touched:**
+  * `src/agronomy/__init__.py` (created)
+  * `src/agronomy/suitability.py` (created)
+  * `src/agronomy/water.py` (created)
+  * `tests/test_agronomy.py` (created)
+* **Decisions made:**
+  * Tested Penman-Monteith against official FAO-56 Box 18 (Cairo, Egypt worked example); matched target $ET_0 = 6.17$ mm/day within 0.1 mm/day.
+  * Kept factor weights configurable in `SUITABILITY_WEIGHTS_CONFIG`.
+* **Uncertainties / Blockers:**
+  * None.
+
+
