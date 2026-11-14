@@ -74,4 +74,39 @@
 * **Uncertainties / Blockers:**
   * None.
 
+---
+
+## Task 3: Optimization & Scenarios (A5 Rotations/Constraints, A6 Ranking, A7 Scenarios)
+* **What changed:**
+  * Implemented `src/optimization/constraints.py` (A5):
+    * Checks for suitability, timing/turnaround, water availability, working capital budget, rotation rules (legume break-crop bonus, rice yearly cap, botanical family penalty), and regulations.
+  * Implemented `src/optimization/rotation_generator.py` (A5):
+    * Enumerates multi-season rotations (Winter -> Summer) via Cartesian product.
+    * Controlled relaxation mechanism when constraints block all combinations.
+  * Implemented `src/optimization/objective.py` & `ranking.py` (A6):
+    * Multi-objective evaluation using `src.business.profitability` (operating profit, ROI, break-even).
+    * Selection of the 3 canonical archetypes: الأكسب (Highest Profit), الأوفر في المية (Water-Saving), الأأمن (Safest/Low-Risk).
+  * Implemented `src/scenarios/scenarios.py` & `sensitivity.py` (A7):
+    * Stress-testing engine for canal water cut, fertilizer price surge, crop price drops, heatwaves.
+    * Guaranteed baseline immutability: deep-copy isolation verified with a test comparing baseline before and after.
+    * One-at-a-time sensitivity analysis across systematic steps.
+  * Unit test suite created in `tests/test_optimization_and_scenarios.py`.
+  * Core test suite passing (70 tests).
+* **Files touched:**
+  * `src/optimization/__init__.py` (created)
+  * `src/optimization/constraints.py` (created)
+  * `src/optimization/rotation_generator.py` (created)
+  * `src/optimization/objective.py` (created)
+  * `src/optimization/ranking.py` (created)
+  * `src/scenarios/__init__.py` (created)
+  * `src/scenarios/scenarios.py` (created)
+  * `src/scenarios/sensitivity.py` (created)
+  * `tests/test_optimization_and_scenarios.py` (created)
+* **Decisions made:**
+  * Aligned itemized cost aggregation in `objective.py` so breakdown components strictly sum to `total_cost_per_feddan_egp`.
+  * Verified that baseline `model_dump()` is 100% immutable across simulations.
+* **Uncertainties / Blockers:**
+  * None.
+
+
 
